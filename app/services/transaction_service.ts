@@ -2,6 +2,7 @@ import NotFoundException from '#exceptions/NotFoundException'
 import { BankAccountService } from './bank_account_service.js'
 import Transaction from '#models/transaction'
 import { DateTime } from 'luxon'
+import db from '@adonisjs/lucid/services/db'
 
 export class TransactionService {
   bankAccountService: BankAccountService
@@ -58,16 +59,32 @@ export class TransactionService {
   }
 
   private async recalculateFollowingBalances(transaction: Transaction) {
-      const followingTransactions = await Transaction.query()
-          .where('bank_account_id', transaction.bankAccountId)
-          .where('date', '>', transaction.date.toSQL()!)
-          .orderBy('date', 'asc')
-
-      let currentBalance = transaction.balanceAfter
-      for (const tx of followingTransactions) {
-        currentBalance += tx.type === 'income' ? tx.price : -tx.price
-        tx.balanceAfter = currentBalance
-        await tx.save()
-      }
-  }
+    const startingBalance = transaction.balanceAfter
+    const accountId = transaction.bankAccountId
+    const transactionDate = transaction.date.toSQL()!
+    await db.rawQuery(
+        `
+        WITH updated_balances AS (
+          SELECT
+            id,
+            bank_account_id,
+            date,
+            type,
+            price,
+            SUM(
+              CASE WHEN type = 'income' THEN price ELSE -price END
+            ) OVER (ORDER BY date ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
+            + ? AS new_balance_after
+          FROM transactions
+          WHERE bank_account_id = ?
+            AND date > ?
+        )
+        UPDATE transactions t
+        SET balance_after = ub.new_balance_after
+        FROM updated_balances ub
+        WHERE t.id = ub.id
+        `,
+        [startingBalance, accountId, transactionDate]
+      )
+    }
 }
