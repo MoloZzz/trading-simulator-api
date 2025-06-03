@@ -6,8 +6,8 @@ export default class extends BaseSchema {
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
-      table.string('account_name')
-      table.decimal('balance', 15, 2)
+      table.string('account_name').defaultTo('unnamed')
+      table.decimal('balance', 15, 2).defaultTo(0)
       table.timestamps(true)
     })
   }

@@ -14,6 +14,11 @@ export class BankAccountService {
     return account
   }
 
+  public async getBalance(id: number): Promise<number> {
+    const account = await this.getById(id)
+    return account.balance
+  }
+
   public async create(accountName: string, balance: number) {
     const account = new BankAccount()
     account.accountName = accountName
