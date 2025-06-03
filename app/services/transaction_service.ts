@@ -63,7 +63,7 @@ export class TransactionService {
     const accountId = transaction.bankAccountId
     const transactionDate = transaction.date.toSQL()!
     await db.rawQuery(
-        `
+      `
         WITH updated_balances AS (
           SELECT
             id,
@@ -84,7 +84,7 @@ export class TransactionService {
         FROM updated_balances ub
         WHERE t.id = ub.id
         `,
-        [startingBalance, accountId, transactionDate]
-      )
-    }
+      [startingBalance, accountId, transactionDate]
+    )
+  }
 }
