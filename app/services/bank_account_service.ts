@@ -1,5 +1,5 @@
+import NotFoundException from '#exceptions/NotFoundException'
 import BankAccount from '#models/bank_account'
-import { Exception } from '@adonisjs/core/exceptions'
 
 export class BankAccountService {
   public async getAll() {
@@ -9,7 +9,7 @@ export class BankAccountService {
   public async getById(id: number) {
     const account = await BankAccount.find(id)
     if (!account) {
-      throw new Exception('Bank account not found')
+      throw new NotFoundException('Bank account not found')
     }
     return account
   }
@@ -26,7 +26,7 @@ export class BankAccountService {
   public async update(id: number, data: Partial<{ accountName: string; balance: number }>) {
     const account = await BankAccount.find(id)
     if (!account) {
-      throw new Exception('Bank account not found', { status: 404 })
+      throw new NotFoundException('Bank account not found')
     }
 
     if (data.accountName !== undefined) {
@@ -44,7 +44,7 @@ export class BankAccountService {
   public async delete(id: number) {
     const account = await BankAccount.find(id)
     if (!account) {
-      throw new Exception('Bank account not found', { status: 404 })
+      throw new NotFoundException('Bank account not found')
     }
 
     await account.delete()
