@@ -1,5 +1,6 @@
 import NotFoundException from '#exceptions/NotFoundException'
 import BankAccount from '#models/bank_account'
+import redis from '@adonisjs/redis/services/main'
 
 export class BankAccountService {
   public async getAll() {
@@ -11,13 +12,21 @@ export class BankAccountService {
     return account
   }
 
-  public async getBalance(id: number): Promise<number> {
-    const account = await this.getById(id)
+  public async getBalance(accountId: number): Promise<number> {
+    const cacheKey = `account:${accountId}:balance`
+    const cached = await redis.get(cacheKey)
+    if (cached) {
+      return parseFloat(cached)
+    }
+
+    const account = await this.getById(accountId)
     if (!account) {
       throw new NotFoundException('Bank account not found')
     }
+
+    await redis.set(cacheKey, account.balance.toString(), 'EX', 60)
     return account.balance
-  }
+  } // Cache balance for 60 seconds, it is wrong approach; Only for the sake of using Redis
 
   public async create(accountName: string, balance: number) {
     const account = new BankAccount()

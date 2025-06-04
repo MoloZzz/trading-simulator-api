@@ -53,8 +53,11 @@ balanceAfter = balanceBefore + (±price).
 ```
 npm install
 ```
-
-створити базу postgres, додати .env в корінь проекту
+```bash
+# This command starts container with Redis
+$ docker compose -f docker-compose.common.yml up -d
+```
+Запустити докер-контейнер з редіс, створити базу postgres, додати .env в корінь проекту
 
 ```
 npm run start

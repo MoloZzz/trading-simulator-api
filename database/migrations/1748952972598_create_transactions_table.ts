@@ -8,7 +8,7 @@ export default class extends BaseSchema {
       table.increments('id')
       table.date('date')
       table.enum('type', ['income', 'expense'])
-      table.decimal('price', 15, 2)
+      table.decimal('price', 15, 2).notNullable()
       table.decimal('balance_after', 15, 2)
       table.integer('bank_account_id').unsigned().references('id').inTable('bank_accounts')
       table.timestamps(true)

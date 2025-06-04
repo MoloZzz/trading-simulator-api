@@ -1,4 +1,5 @@
 import { TransactionService } from '#services/transaction_service'
+import { createTransactionValidator } from '#validators/store_transaction'
 import { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
 
@@ -6,10 +7,11 @@ export default class TransactionsController {
   private transactionService = new TransactionService()
 
   public async create({ request, response }: HttpContext) {
-    const payload = request.only(['accountId', 'date', 'type', 'price'])
-    const date = DateTime.fromISO(payload.date)
+    const payload = await request.validateUsing(createTransactionValidator)
+    
+    const date = DateTime.fromJSDate(payload.date)
     if (!date.isValid) {
-      return response.status(400).send({ message: 'Invalid date format' })
+      return response.badRequest({ message: 'Invalid date format' })
     }
 
     const transaction = await this.transactionService.create({
