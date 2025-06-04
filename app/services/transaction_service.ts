@@ -19,6 +19,13 @@ export class TransactionService {
     return transaction
   }
 
+  public async getAllByAccountId(accountId: number) {
+    const transactions = await Transaction.query()
+      .where('bank_account_id', accountId)
+      .orderBy('date', 'asc')
+    return transactions
+  }
+
   public async create(data: {
     accountId: number
     date: DateTime
@@ -35,8 +42,7 @@ export class TransactionService {
       ? lastTransaction.balanceAfter
       : await this.bankAccountService.getBalance(data.accountId)
 
-    const balanceAfter = balanceBefore + (data.type === 'income' ? data.price : -data.price)
-
+    const balanceAfter = Number(balanceBefore) + (data.type === 'income' ? data.price : -data.price)
     let createdTransaction
     try {
       createdTransaction = await Transaction.create({
@@ -55,7 +61,7 @@ export class TransactionService {
     }
 
     await this.recalculateFollowingBalances(createdTransaction)
-    return createdTransaction
+    return await createdTransaction.save()
   }
 
   private async recalculateFollowingBalances(transaction: Transaction) {

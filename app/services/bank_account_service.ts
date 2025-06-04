@@ -8,14 +8,14 @@ export class BankAccountService {
 
   public async getById(id: number) {
     const account = await BankAccount.find(id)
-    if (!account) {
-      throw new NotFoundException('Bank account not found')
-    }
     return account
   }
 
   public async getBalance(id: number): Promise<number> {
     const account = await this.getById(id)
+    if (!account) {
+      throw new NotFoundException('Bank account not found')
+    }
     return account.balance
   }
 
